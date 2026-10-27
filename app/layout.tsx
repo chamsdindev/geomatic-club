@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { B612 } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { copy } from "@/lib/copy";
 import { STORAGE } from "@/lib/config";
 import "./globals.css";
@@ -41,7 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <style>{`[data-body]{opacity:1!important}.boot{display:none!important}`}</style>
         </noscript>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* real visits and Core Web Vitals, for vercel-optimize later */}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
