@@ -33,7 +33,8 @@ per browser tab and never with reduced motion.
 ## Connecting email
 
 Registrations go to `POST /api/register` (`app/api/register/route.ts`): it validates the data, drops bots that
-fill the hidden field, limits each IP to 5 sends in 10 minutes, then calls `sendRegistrationEmail()` in
+fill the hidden field, limits each IP to 40 sends in 10 minutes (a whole class can share one university Wi-Fi or one
+mobile carrier's public IP), then calls `sendRegistrationEmail()` in
 `lib/email.ts`, which sends the email through [Resend](https://resend.com) with a plain `fetch` (no SDK). The
 message is built by `emails/registration.ts`: subject « Nouvelle inscription : Prénom Nom — date à heure », an HTML
 and a plain-text version with the first name, name, date, time (French, Tunis time), GC code, coordinates and the
@@ -56,8 +57,18 @@ can't be reached, the error is logged on the server, the browser gets a generic 
 code + time received), so the server's own retry never sends it twice. Local values go in `.env.local`, which git
 ignores.
 
-The rate limit lives in memory (`lib/rate-limit.ts`): it resets when a server instance restarts. For a stricter
-limit, move it to a shared store such as Vercel KV.
+The same registration (Prénom + Nom + date + heure, spaces and capitals aside) sent again within 10 minutes gets
+the first answer back, `{ ok: true, ref }`, and no second email (`lib/dedupe.ts`); two sent at the same moment share
+one send.
+
+Resend's free plan sends 100 emails a day and a few per second. A per-second refusal is retried (up to three
+tries); when the daily or monthly quota is reached, or a 429 persists, the registration is **not lost**: the server
+logs it whole on one line starting with `EMAIL_QUOTA` (first name, name, date, time, GC code, coordinates, time
+received) and the member still sees the success screen. To recover them: Vercel → the project → Logs, search
+`EMAIL_QUOTA`.
+
+The rate limit and the duplicate check live in memory (`lib/rate-limit.ts`): they reset when a server instance restarts. For a
+stricter limit, move them to a shared store such as Vercel KV.
 
 ## Deploying
 
