@@ -34,15 +34,27 @@ per browser tab and never with reduced motion.
 
 Registrations go to `POST /api/register` (`app/api/register/route.ts`): it validates the data, drops bots that
 fill the hidden field, limits each IP to 5 sends in 10 minutes, then calls `sendRegistrationEmail()` in
-`lib/email.ts`. Today that function only logs the registration on the server. To send real emails:
+`lib/email.ts`, which sends the email through [Resend](https://resend.com) with a plain `fetch` (no SDK). The
+message is built by `emails/registration.ts`: subject « Nouvelle inscription : Prénom Nom — date à heure », an HTML
+and a plain-text version with the first name, name, date, time (French, Tunis time), GC code, coordinates and the
+time it was received.
 
-1. Set three variables in Vercel (Project → Settings → Environment Variables), named as in `.env.example`:
-   - **`EMAIL_API_KEY`**: your provider's API key
-   - **`EMAIL_FROM`**: the sender, an address your provider has verified
-   - **`EMAIL_TO`**: where registrations should arrive
-2. In `lib/email.ts`, replace the `TODO` with your provider's API call. The message is already built by
-   `emails/registration.ts` (`subject`, `text` and `html`: name, date, time, coordinates, reference, time received).
-3. Redeploy.
+Three variables, set in Vercel (Project → Settings → Environment Variables, Production and Preview), named as in
+`.env.example`:
+
+- **`EMAIL_API_KEY`**: a Resend API key (send access is enough)
+- **`EMAIL_FROM`**: the sender, e.g. `Geomatic Club <onboarding@resend.dev>`
+- **`EMAIL_TO`**: where registrations arrive
+
+Without a verified domain, Resend sends from `onboarding@resend.dev` and **only delivers to the email address of
+the Resend account itself**: `EMAIL_TO` must be that address until a domain is verified at Resend (then
+`EMAIL_FROM` can use it, and any recipient works).
+
+Without `EMAIL_API_KEY` (local development) the registration is only logged on the server. If Resend refuses or
+can't be reached, the error is logged on the server, the browser gets a generic failure and the site shows
+« Réessayer »; the key and Resend's message never reach the browser. Each email carries an `Idempotency-Key` (GC
+code + time received), so the server's own retry never sends it twice. Local values go in `.env.local`, which git
+ignores.
 
 The rate limit lives in memory (`lib/rate-limit.ts`): it resets when a server instance restarts. For a stricter
 limit, move it to a shared store such as Vercel KV.

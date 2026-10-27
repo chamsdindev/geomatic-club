@@ -72,6 +72,6 @@ export const copy = {
     now: "c’est maintenant",
   },
   email: {
-    subject: (prenom: string, nom: string) => `Nouvelle inscription\u00a0: ${prenom} ${nom}`,
+    subject: (prenom: string, nom: string, date: string, time: string) => `Nouvelle inscription\u00a0: ${prenom} ${nom} — ${date} à ${time}`,
   },
 } as const;
