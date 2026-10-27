@@ -1,0 +1,45 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="a-shared.css"><script src="fc-scene.js"></script>
+<style>
+.bands{position:absolute;left:12px;top:318px;display:grid;gap:5px;background:rgba(10,12,14,.82);padding:8px 10px}
+.bands div{display:flex;align-items:center;gap:8px}
+.sw{width:12px;height:12px;display:inline-block}
+.scale{position:absolute;right:12px;top:362px;text-align:right;background:rgba(10,12,14,.82);padding:8px 10px}
+.scale i{display:block;width:64px;height:4px;border:1px solid var(--blanc);border-top:0;margin-top:4px;margin-left:auto}
+.scene-id{position:absolute;right:16px;top:20px;text-align:right;line-height:1.5}
+.panel{position:absolute;left:0;right:0;top:418px;bottom:0;background:var(--nuit);padding:22px 20px 22px}
+.swath{position:absolute;left:0;right:0;top:-6px;height:6px;background:repeating-linear-gradient(90deg,var(--pir) 0 3px,transparent 3px 6px);opacity:.9}
+h1{font-weight:800;font-variation-settings:"wdth" 62;font-size:40px;line-height:.95;letter-spacing:-.01em}
+.lead{margin-top:8px;color:#CFCAC0;font-size:15px;font-variation-settings:"wdth" 100}
+.rows{margin-top:16px;border-top:1px solid #2A2F33}
+.row{display:grid;grid-template-columns:14px 34px 1fr auto;align-items:center;column-gap:10px;height:54px;border-bottom:1px solid #2A2F33}
+.row label{color:var(--ocre);display:block;margin-bottom:2px}
+.row .v{font-size:20px;font-weight:600;font-variation-settings:"wdth" 100}
+.row.focus{box-shadow:inset 0 -2px 0 var(--cyan)}
+.row .ph{color:#6E6A63}
+.key{color:#8E8A82}
+.ok{color:var(--ocre)}
+.cta{margin-top:16px;height:56px;background:var(--pir);color:var(--nuit);display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:800;font-variation-settings:"wdth" 112;font-size:19px}
+</style></head><body>
+<canvas class="scene" id="s" style="height:424px"></canvas>
+<div class="brand"><svg viewBox="0 0 7 5" width="34" height="24" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 0h3v1H1v3h1V2h1v3H0zM4 0h3v1H5v3h2v1H4z"/><rect x="2" y="2" width="1" height="1" fill="#EF3B4A"/></svg><span>Geomatic Club</span></div>
+<div class="scene-id mono">GC 2026-10-27<br>10:02 UTC</div>
+<span class="crop" style="left:10px;top:60px;border-width:1px 0 0 1px"></span><span class="crop" style="right:10px;top:60px;border-width:1px 1px 0 0"></span>
+<div class="bands mono">
+ <div><span class="sw" style="background:#EF3B4A"></span>R  B08  proche infrarouge</div>
+ <div><span class="sw" style="background:#7BC96F"></span>V  B04  rouge</div>
+ <div><span class="sw" style="background:#5B8DEF;opacity:.35"></span><span style="opacity:.55">B  B03  vert, en attente</span></div>
+</div>
+<div class="scale mono">500 m<i></i></div>
+<section class="panel"><div class="swath"></div>
+ <h1>Réserve ta place.</h1>
+ <p class="lead">Indique ton nom et choisis un créneau.</p>
+ <div class="rows">
+  <div class="row"><span class="sw" style="background:var(--pir)"></span><span class="mono key">B08</span><div><label class="mono">Prénom</label><div class="v">Amine</div></div><span class="mono ok">acquis</span></div>
+  <div class="row"><span class="sw" style="background:#7BC96F"></span><span class="mono key">B04</span><div><label class="mono">Nom</label><div class="v">Ben Salah</div></div><span class="mono ok">acquis</span></div>
+  <div class="row"><span class="sw" style="border:1px solid #5B8DEF"></span><span class="mono key">B03</span><div><label class="mono">Date</label><div class="v">jeu. 14 nov. 2026</div></div><span class="mono ok">acquis</span></div>
+  <div class="row focus"><span class="sw" style="border:1px solid #6E6A63"></span><span class="mono key">SUN</span><div><label class="mono">Heure</label><div class="v ph">--:--</div></div><span class="mono key">soleil</span></div>
+ </div>
+ <div class="cta"><span>Envoyer</span><span class="mono" style="font-size:12px">3 / 4</span></div>
+</section>
+<script>drawScene(document.getElementById("s"))</script>
+</body></html>

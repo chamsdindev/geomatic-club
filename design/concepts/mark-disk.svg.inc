@@ -1,0 +1,1 @@
+<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="9.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M16 9.5v13M9.5 16h13" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="2.2" fill="#F25E45"/></svg>

@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
+:root{--pin:#0D2420;--calcaire:#D8D3C4;--brume:#8FA59F;--jalon:#F25E45;--blanc:#F5F3EC}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:390px;height:844px;overflow:hidden;background:var(--pin);color:var(--blanc);font-family:"Bricolage Grotesque",sans-serif}
+.mono{font-family:"Spline Sans Mono",monospace;font-size:12px;font-variant-numeric:tabular-nums}
+canvas{position:absolute;left:0;top:0;width:390px;display:block}
+.brand{position:absolute;left:18px;top:18px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.01em;font-variation-settings:"opsz" 24}
+.rod{display:inline-block;width:4px;height:22px;background:repeating-linear-gradient(180deg,var(--jalon) 0 4.4px,var(--blanc) 4.4px 8.8px)}

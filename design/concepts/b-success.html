@@ -1,0 +1,39 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="b-shared.css"><script src="tin.js"></script>
+<style>
+.sheet{position:absolute;left:0;right:0;top:340px;bottom:0;background:var(--pin);padding:22px 20px}
+.edge{position:absolute;left:0;right:0;top:-1px;height:1px;background:#2B4A43}
+h1{font-size:40px;line-height:.98;font-weight:750;letter-spacing:-.03em;font-variation-settings:"opsz" 96,"wdth" 85}
+h1 em{font-style:normal;color:var(--jalon)}
+.p{margin-top:10px;font-size:16px;color:var(--calcaire);line-height:1.4}
+.count{margin-top:14px;display:flex;align-items:baseline;gap:10px}
+.count b{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 80}
+dl{margin-top:12px;display:grid;grid-template-columns:110px 1fr;row-gap:7px}
+dt{color:var(--brume)}
+.btns{position:absolute;left:20px;right:20px;bottom:20px;display:grid;gap:10px}
+.b1{height:54px;background:var(--jalon);color:var(--pin);display:flex;align-items:center;justify-content:center;font-weight:750;font-size:18px}
+.b2{height:54px;border:1px solid var(--calcaire);display:flex;align-items:center;justify-content:center;font-weight:650;font-size:17px}
+.again{text-align:center;color:var(--brume);text-decoration:underline;text-underline-offset:3px;font-size:14px}
+</style></head><body>
+<canvas id="c" style="height:350px"></canvas>
+<div class="brand"><svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="9.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M16 9.5v13M9.5 16h13" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="16" r="2.2" fill="#F25E45"/></svg><span>Geomatic Club</span></div>
+<section class="sheet"><div class="edge"></div>
+ <h1>Bienvenue sur la carte, <em>Amine.</em></h1>
+ <p class="p">Ton point est fixé. Le jeudi 14 novembre à 14&nbsp;h&nbsp;30, on t'attend.</p>
+ <div class="count"><b>18 j 4 h</b><span class="mono" style="color:var(--brume)">avant le rendez-vous</span></div>
+ <dl class="mono"><dt>Sommet</dt><dd>Amine Ben Salah, 576 m</dd><dt>Coordonnées</dt><dd>36.8412 N  10.2207 E</dd><dt>Référence</dt><dd>GC-3684N-1022E-1114</dd></dl>
+ <div class="btns"><div class="b1">Enregistrer ma carte</div><div class="b2">Partager</div><div class="again">Nouvelle inscription</div></div>
+</section>
+<script>
+Promise.all([document.fonts.load("700 17px 'Bricolage Grotesque'"),document.fonts.load("500 12px 'Spline Sans Mono'")]).then(()=>{
+const c=document.getElementById("c"); const P=renderTIN(c,{yaw:0.35,scale:430,hs:190,cy:500,ox:-0.08,oy:0.1,span:0.8,n:30,tilt:0.6});
+const ctx=c.getContext("2d"); const t=P(-0.2,0.04);
+// pole
+for(let i=0;i<6;i++){ctx.fillStyle=i%2?"#F5F3EC":"#F25E45";ctx.fillRect(t.x-2,t.y-96+i*16,4,16)}
+// flag with the name
+ctx.fillStyle="#F25E45"; ctx.beginPath(); ctx.moveTo(t.x+2,t.y-96); ctx.lineTo(t.x+150,t.y-90); ctx.lineTo(t.x+146,t.y-58); ctx.lineTo(t.x+2,t.y-62); ctx.closePath(); ctx.fill();
+ctx.fillStyle="#0D2420"; ctx.font="700 17px 'Bricolage Grotesque'"; ctx.fillText("Amine Ben Salah", t.x+10, t.y-72);
+ctx.fillStyle="rgba(245,243,236,.9)"; ctx.beginPath(); ctx.ellipse(t.x,t.y,10,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle="rgba(13,36,32,.86)"; ctx.fillRect(t.x-126,t.y+10,228,24); ctx.fillStyle="#F5F3EC"; ctx.font="500 12px 'Spline Sans Mono'"; ctx.fillText("576 m  36.8412 N  10.2207 E", t.x-118, t.y+26);
+});
+</script>
+</body></html>

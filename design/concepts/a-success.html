@@ -1,0 +1,41 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="a-shared.css"><script src="fc-scene.js"></script>
+<style>
+.pix{position:absolute;left:206px;top:150px;width:12px;height:12px;outline:2px solid var(--blanc);outline-offset:0;background:var(--pir)}
+.ring{position:absolute;left:182px;top:126px;width:60px;height:60px;border:1px solid var(--blanc)}
+.leader{position:absolute;left:211px;top:186px;width:1px;height:10px;background:var(--blanc)}
+.tag{position:absolute;left:150px;top:196px;line-height:1.35;background:rgba(10,12,14,.86);padding:8px 10px;white-space:nowrap}
+.tag b{display:block;font-weight:800;font-variation-settings:"wdth" 130;font-size:16px;letter-spacing:.02em}
+.legend{position:absolute;left:12px;top:62px;display:flex;gap:12px;background:rgba(10,12,14,.82);padding:6px 10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.sheet{position:absolute;left:0;right:0;top:292px;bottom:0;background:var(--nuit);padding:22px 20px}
+h1{font-weight:800;font-variation-settings:"wdth" 62;font-size:44px;line-height:.95;letter-spacing:-.01em}
+h1 em{font-style:normal;color:var(--pir)}
+.p{margin-top:10px;font-size:16px;line-height:1.4;color:#DCD8CE}
+.count{margin-top:14px;display:flex;justify-content:space-between;border:1px solid #2A2F33;padding:12px 14px;align-items:baseline}
+.count b{font-weight:700;font-variation-settings:"wdth" 75;font-size:30px;font-variant-numeric:tabular-nums}
+table{margin-top:14px;width:100%;border-collapse:collapse}
+td{padding:7px 0;border-bottom:1px solid #22272B;vertical-align:top}
+td:first-child{color:var(--ocre);width:118px}
+.btns{position:absolute;left:20px;right:20px;bottom:20px;display:grid;gap:10px}
+.b1{height:54px;background:var(--pir);color:var(--nuit);display:flex;align-items:center;justify-content:center;font-weight:800;font-variation-settings:"wdth" 112;font-size:18px}
+.b2{height:54px;border:1px solid var(--blanc);display:flex;align-items:center;justify-content:center;font-weight:700;font-variation-settings:"wdth" 112;font-size:17px}
+.again{text-align:center;color:#AFAAA0;text-decoration:underline;text-underline-offset:3px;font-size:14px}
+</style></head><body>
+<canvas class="scene" id="s" style="height:300px"></canvas>
+<div class="brand"><svg viewBox="0 0 7 5" width="34" height="24" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 0h3v1H1v3h1V2h1v3H0zM4 0h3v1H5v3h2v1H4z"/><rect x="2" y="2" width="1" height="1" fill="#EF3B4A"/></svg><span>Geomatic Club</span></div>
+<div class="ring"></div><div class="pix"></div><div class="leader"></div>
+<div class="tag mono"><b>Amine Ben Salah</b>36.8412 N<br>10.2207 E</div>
+<div class="legend mono"><span><i class="sw" style="width:10px;height:10px;background:#EF3B4A;display:inline-block"></i>membre</span><span><i style="width:10px;height:10px;background:#D9A25B;display:inline-block"></i>sol</span><span><i style="width:10px;height:10px;background:#7EB0BE;display:inline-block"></i>ville</span><span><i style="width:10px;height:10px;background:#18687A;display:inline-block"></i>eau</span></div>
+<section class="sheet">
+ <h1>Bienvenue sur la carte, <em>Amine.</em></h1>
+ <p class="p">Ton point est fixé. Le jeudi 14 novembre à 14&nbsp;h&nbsp;30, on t'attend.</p>
+ <div class="count"><span class="mono" style="color:var(--ocre)">Rendez-vous</span><b>dans 18 j 4 h</b></div>
+ <table class="mono">
+  <tr><td>Pixel</td><td>10 m × 10 m, classé membre</td></tr>
+  <tr><td>Coordonnées</td><td>36.8412 N  10.2207 E</td></tr>
+  <tr><td>Référence</td><td>GC-3684N-1022E-1114</td></tr>
+ </table>
+ <div class="btns"><div class="b1">Enregistrer ma carte</div><div class="b2">Partager</div><div class="again">Nouvelle inscription</div></div>
+</section>
+<script>drawScene(document.getElementById("s"),{block:6,flat:true})</script>
+</body></html>

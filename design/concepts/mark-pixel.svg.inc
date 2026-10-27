@@ -1,0 +1,1 @@
+<svg viewBox="0 0 7 5" width="34" height="24" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 0h3v1H1v3h1V2h1v3H0zM4 0h3v1H5v3h2v1H4z"/><rect x="2" y="2" width="1" height="1" fill="#EF3B4A"/></svg>
