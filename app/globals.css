@@ -1,26 +1,340 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* DESIGN.md §1–2. The only colours on the site. */
+@theme {
+  --color-paper: #e9eee7;
+  --color-ink: #13233b;
+  --color-ink-2: #46566a;
+  --color-contour: #7f9a7c;
+  --color-contour-index: #5e7a5b;
+  --color-water: #3f74a3;
+  --color-marker: #f5a100;
+  --color-fault: #a33b22;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --ease-survey: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-pan: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100dvh;
+  background: var(--color-paper);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-water) 25%, transparent);
+}
+
+/* Width as hierarchy: expanded for names, normal for text, condensed for the margin. */
+.wide {
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+}
+.semi {
+  font-stretch: 87%;
+  font-variation-settings: "wdth" 87;
+}
+.marginalia {
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  font-stretch: 75%;
+  font-variation-settings: "wdth" 75;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The column, inside the safe area and the neatline. */
+.page {
+  padding-left: max(24px, calc(env(safe-area-inset-left) + 20px));
+  padding-right: max(24px, calc(env(safe-area-inset-right) + 20px));
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* The sheet's edge: an outer rule and an inner hairline. */
+.neatline {
+  inset: calc(env(safe-area-inset-top) + 7px) calc(env(safe-area-inset-right) + 7px)
+    calc(env(safe-area-inset-bottom) + 7px) calc(env(safe-area-inset-left) + 7px);
+  border: 1.25px solid color-mix(in srgb, var(--color-ink) 78%, transparent);
+  outline: 0.75px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
+  outline-offset: -5px;
+}
+
+/* The map stops at the neatline; the margin is plain paper. */
+.sheet-clip {
+  clip-path: inset(
+    calc(env(safe-area-inset-top) + 7px) calc(env(safe-area-inset-right) + 7px)
+      calc(env(safe-area-inset-bottom) + 7px) calc(env(safe-area-inset-left) + 7px)
+  );
+}
+
+.graticule-lines path {
+  fill: none;
+  stroke: var(--color-water);
+  stroke-width: 0.75;
+  stroke-opacity: var(--grat-o, 0.3);
+  vector-effect: non-scaling-stroke;
+}
+.graticule-labels {
+  fill: var(--color-ink-2);
+}
+
+/* Wordmark */
+.wordmark {
+  font-size: clamp(25px, 7.4vw, 33px);
+  line-height: 1;
+  font-weight: 800;
+  padding-top: 6px;
+}
+.wordmark-text {
+  display: inline-flex;
+  letter-spacing: -0.035em;
+  font-kerning: none;
+  white-space: nowrap;
+}
+.wordmark-letter {
+  display: inline-block;
+}
+.wordmark-space {
+  display: inline-block;
+  width: 0.26em;
+}
+.wordmark-glyph {
+  width: 0.92em;
+  height: auto;
+  margin-top: -0.06em;
+}
+
+.north-arrow {
+  margin-top: 2px;
+  transform-origin: 50% 60%;
+}
+
+/* On a wide screen the marginalia go to the sheet's corners, as on a printed map. */
+@media (min-width: 768px) {
+  .north-arrow {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 30px);
+    right: calc(env(safe-area-inset-right) + 32px);
+  }
+  .sheet-footer {
+    position: fixed;
+    left: calc(env(safe-area-inset-left) + 32px);
+    right: calc(env(safe-area-inset-right) + 32px);
+    bottom: calc(env(safe-area-inset-bottom) + 22px);
+    padding: 0;
+  }
+}
+
+/* The open map between the header and the form; its centre is the fix point. */
+.map-window {
+  height: clamp(132px, 22dvh, 210px);
+}
+.reticle {
+  transform: scale(0.5);
+  opacity: 0.6;
+  transform-origin: 50% 50%;
+}
+
+/* The cartouche: contours masked under the form, as under a map's legend. */
+.halo {
+  position: absolute;
+  inset: -22px -18px -10px;
+  background: var(--color-paper);
+  opacity: 0.8;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
+    linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
+    linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+  mask-composite: intersect;
+}
+
+.lead {
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+/* Fields: a surveyed baseline, not a box. */
+.field {
+  position: relative;
+}
+.field-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--color-ink-2);
+  font-stretch: 87%;
+  font-variation-settings: "wdth" 87;
+}
+.field-input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 1px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+.field-input::-webkit-date-and-time-value {
+  text-align: left;
+}
+.field-input::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+}
+.field-baseline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-ink);
+  opacity: 0.55;
+  transform-origin: 0 50%;
+}
+.field:focus-within .field-baseline {
+  background: var(--color-water);
+  opacity: 1;
+  height: 2px;
+}
+
+/* The survey plate (send). Unlocked: outline only. */
+.plate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid var(--color-ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 600;
+  font-stretch: 112%;
+  font-variation-settings: "wdth" 112;
+  cursor: pointer;
+}
+.plate:focus-visible {
+  outline: 2px solid var(--color-water);
+  outline-offset: 3px;
+}
+
+/* Intro overlay (hidden once played, or never shown). */
+html[data-intro="skip"] .intro,
+html[data-intro="done"] .intro {
+  display: none;
+}
+html:not([data-intro="skip"]):not([data-intro="done"]) [data-intro-hide] {
+  opacity: 0;
+}
+html:not([data-intro="skip"]):not([data-intro="done"]) [data-grat-line] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+html:not([data-intro="skip"]):not([data-intro="done"]) body {
+  overflow: hidden;
+}
+.intro {
+  cursor: default;
+  touch-action: none;
+}
+.intro-skip:focus {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+  outline: 2px solid var(--color-water);
+  outline-offset: 2px;
+  font-size: 15px;
+}
+.intro-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0;
+  will-change: transform;
+}
+.intro-scan-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36px;
+  background: var(--color-water);
+  opacity: 0.06;
+}
+.intro-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-water);
+  opacity: 0.9;
+}
+.intro-signal {
+  fill: none;
+  stroke: var(--color-water);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.intro-coords {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* A skipped intro lands in 250 ms instead of cutting. */
+.intro-skipped .page {
+  animation: settle 250ms var(--ease-survey) both;
+}
+@keyframes settle {
+  from {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-skipped .page {
+    animation: none;
+  }
 }
