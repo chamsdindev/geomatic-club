@@ -21,7 +21,7 @@ await page.locator("#date").fill("2026-11-14"); await page.locator("#date").disp
 await shot("2-filling");
 await page.locator("#heure").fill("14:30"); await page.locator("#heure").dispatchEvent("change"); await page.waitForTimeout(1100);
 await shot("3-ready");
-await page.locator("#envoyer").click();
+await page.locator(process.env.SUBMIT || "#envoyer").click();
 await page.waitForTimeout(1300); await shot("4-success-moment");
 await page.waitForTimeout(3600); await shot("5-success-end");
 const video = page.video(); await ctx.close(); await browser.close();

@@ -1,44 +1,44 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
+import { B612 } from "next/font/google";
 import { copy } from "@/lib/copy";
-import { INTRO_KEY } from "@/lib/config";
+import { STORAGE } from "@/lib/config";
 import "./globals.css";
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-archivo",
-  display: "swap",
-});
+/** B612: designed for Airbus cockpit displays, legible on instrument screens; the whole site is set in it. */
+const b612 = B612({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-b612", display: "swap" });
+
+const site = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site),
   title: copy.meta.title,
   description: copy.meta.description,
+  applicationName: copy.clubName,
+  icons: {
+    icon: [{ url: "/brand/favicon.ico", sizes: "48x48" }, { url: "/brand/icon.svg", type: "image/svg+xml" }],
+    apple: "/brand/apple-touch-icon.png",
+  },
+  openGraph: { title: copy.meta.title, description: copy.meta.description, locale: "fr_FR", type: "website" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E9EEE7",
+  themeColor: "#F2C230",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
   colorScheme: "only light",
 };
 
-/**
- * Decides before the first paint whether the intro plays: not with reduced motion, not twice
- * in a tab. `?intro=1` plays it again, `?intro=0` never.
- */
-const introScript = `(function(){var d=document.documentElement,q=location.search;try{if(/[?&]intro=1/.test(q))return;if(/[?&]intro=0/.test(q)||sessionStorage.getItem(${JSON.stringify(
-  INTRO_KEY,
-)})||matchMedia("(prefers-reduced-motion: reduce)").matches)d.dataset.intro="skip"}catch(e){d.dataset.intro="skip"}})()`;
+/** Before the first paint: the receiver boots once per tab, never with reduced motion. `?boot=1` forces it, `?boot=0` skips it. */
+const bootScript = `(function(){var d=document.documentElement;try{if(/[?&]boot=1/.test(location.search))return;if(/[?&]boot=0/.test(location.search)||sessionStorage.getItem(${JSON.stringify(STORAGE.boot)})||matchMedia("(prefers-reduced-motion: reduce)").matches)d.dataset.boot="skip"}catch(e){d.dataset.boot="skip"}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={archivo.variable} suppressHydrationWarning>
+    <html lang="fr" className={b612.variable} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: introScript }} />
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
         <noscript>
-          <style>{`[data-intro-hide]{opacity:1!important}.intro{display:none!important}`}</style>
+          <style>{`[data-body]{opacity:1!important}.boot{display:none!important}`}</style>
         </noscript>
       </head>
       <body>{children}</body>

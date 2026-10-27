@@ -1,340 +1,170 @@
 @import "tailwindcss";
 
-/* DESIGN.md §1–2. The only colours on the site. */
-@theme {
-  --color-paper: #e9eee7;
-  --color-ink: #13233b;
-  --color-ink-2: #46566a;
-  --color-contour: #7f9a7c;
-  --color-contour-index: #5e7a5b;
-  --color-water: #3f74a3;
-  --color-marker: #f5a100;
-  --color-fault: #a33b22;
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --ease-survey: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-pan: cubic-bezier(0.65, 0, 0.35, 1);
+/* DESIGN.md: the instrument's colours. Nothing else is used. */
+:root {
+  --jaune: #f2c230;   /* tripod yellow: the body */
+  --ecran: #dce3d5;   /* the LCD and the field wells */
+  --encre: #16201a;   /* text, keys, bezels */
+  --rouge: #d7262e;   /* the target, the ranging rod, FIX */
+  --blanc: #ffffff;
+  --off: #56604f;     /* the LCD before it boots */
+  --font: var(--font-b612), "B612", system-ui, sans-serif;
 }
 
-html {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
+* { box-sizing: border-box; }
+html { background: var(--jaune); color: var(--encre); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; min-height: 100dvh; background: var(--jaune); font-family: var(--font); font-size: 16px; line-height: 1.4; overflow-x: hidden; }
+button, input { font: inherit; color: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.num { font-variant-numeric: tabular-nums; }
+
+.page { min-height: 100dvh; display: flex; justify-content: center; }
+.instrument {
+  width: 100%; max-width: 440px; min-height: 100dvh; display: flex; flex-direction: column; gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 
-body {
-  min-height: 100dvh;
-  background: var(--color-paper);
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+/* Header: the logo and the receiver's model plate */
+.top { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; fill: var(--encre); }
+.model { font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+.screw { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--encre); position: relative; display: inline-block; }
+.screw::after { content: ""; position: absolute; left: 1px; right: 1px; top: 3px; height: 2px; background: var(--encre); transform: rotate(-30deg); }
+
+/* The screen */
+.bezel { background: var(--encre); border-radius: 20px; padding: 8px; }
+.lcd { position: relative; background: var(--ecran); color: var(--encre); border-radius: 12px; padding: 8px 12px 10px; overflow: hidden; }
+.statusbar { display: flex; justify-content: space-between; align-items: center; font-size: 13px; min-height: 30px; border-bottom: 1.5px solid currentColor; font-variant-numeric: tabular-nums; }
+.statusbar > span { display: inline-flex; align-items: center; gap: 5px; }
+.sound { width: 44px; height: 30px; margin-right: -10px; display: grid; place-items: center; background: none; border: 0; cursor: pointer; border-radius: 6px; touch-action: manipulation; }
+.sound:hover { background: rgb(22 32 26 / 0.1); }
+.sound:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+.state-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; min-height: 36px; font-variant-numeric: tabular-nums; }
+.state-wrap { position: relative; flex: 1; }
+.state { font-weight: 700; font-size: 26px; letter-spacing: -0.01em; }
+.fix { position: absolute; left: 0; top: 0; fill: currentColor; }
+.fix [data-dot] { opacity: 0; }
+.ladder { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.ladder li { position: relative; height: 22px; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 11.5px; }
+.ladder b { position: absolute; inset: 0; background: currentColor; transform: scaleX(0); transform-origin: 0 50%; }
+.ladder b.on { transform: scaleX(1); }
+.ladder span { position: relative; color: var(--encre); transition: color 0.2s; }
+.ladder li:has(b.on) span { color: var(--ecran); }
+.lcd.locked .ladder li:has(b.on) span { color: var(--encre); }
+.mid { display: grid; grid-template-columns: 1fr 96px; gap: 8px; margin-top: 4px; align-items: center; overflow: hidden; }
+.sky { width: 100%; max-width: 176px; height: auto; display: block; margin: 0 auto; }
+.sky .ring { fill: none; stroke: currentColor; stroke-width: 1; }
+.sky .axis { stroke: currentColor; stroke-width: 0.8; opacity: 0.5; }
+.sky text { font-family: var(--font); font-size: 10px; fill: currentColor; }
+.sat path { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-dasharray: 2 2; }
+.sat { opacity: 0.55; }
+.sat.on { opacity: 1; }
+.sat.on path { fill: currentColor; stroke-dasharray: none; }
+.vial { width: 80px; height: 80px; border-radius: 50%; border: 2px solid currentColor; position: relative; margin: 0 auto; background: #cbd6be; }
+.vial::before { content: ""; position: absolute; inset: 23px; border-radius: 50%; border: 1.5px dashed currentColor; }
+.bubble { position: absolute; left: 29px; top: 29px; width: 20px; height: 20px; border-radius: 50%; background: #f4f7ee; border: 1px solid currentColor; will-change: transform; }
+.prec { font-size: 13px; margin: 8px 0 0; line-height: 1.5; text-align: center; font-variant-numeric: tabular-nums; }
+.foot { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-top: 6px; border-top: 1.5px solid currentColor; padding-top: 5px; min-height: 24px; }
+.foot [data-msg] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foot [data-epoch] { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* FIX: the screen inverts */
+.lcd.locked { background: var(--encre); color: var(--ecran); }
+.lcd.locked .state-row { min-height: 60px; }
+.lcd.locked .vial { background: #2b3a2f; }
+.lcd.locked .bubble { background: var(--ecran); }
+
+/* The boot screen: only while it boots (decided before the first paint) */
+.boot { position: absolute; inset: 0; display: grid; place-items: center; fill: var(--encre); pointer-events: none; }
+html[data-boot="skip"] .boot, html[data-boot="done"] .boot { display: none; }
+html:not([data-boot="skip"]):not([data-boot="done"]) [data-body] { opacity: 0; }
+html:not([data-boot="skip"]):not([data-boot="done"]) .lcd { background: var(--off); }
+
+/* The form, on the body */
+.form { display: grid; gap: 4px; }
+.lead { margin: 0 2px 2px; font-size: 15px; text-wrap: pretty; }
+.pair { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
+.field-label { display: block; font-size: 14px; font-weight: 700; margin: 6px 0 4px 2px; }
+.well { position: relative; height: 50px; border-radius: 10px; background: var(--ecran); border: 2.5px solid var(--encre); display: flex; align-items: center; }
+.well input { position: absolute; inset: 0; width: 100%; border: 0; background: transparent; font-size: 18px; padding: 0 12px; outline: none; border-radius: 8px; }
+.well-picker input { opacity: 0; cursor: pointer; }
+.well-picker span { padding: 0 12px; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.well-picker .placeholder { color: #4f5a4b; }
+.well:focus-within { outline: 3px solid var(--encre); outline-offset: 2px; }
+.field[data-invalid] .well { border-color: var(--rouge); }
+.field-error { margin: 3px 0 2px 2px; min-height: 0; font-size: 13px; display: flex; gap: 6px; align-items: flex-start; }
+.field-error:empty { margin: 0; }
+.field-error:not(:empty)::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 4px; background: var(--rouge); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.rod { display: grid; grid-template-columns: repeat(4, 1fr); height: 12px; border: 2px solid var(--encre); margin: 6px 0 2px; }
+.rod i { position: relative; background: var(--blanc); }
+.rod i + i { border-left: 2px solid var(--encre); }
+.rod b { position: absolute; inset: 0; background: var(--rouge); transform: scaleX(0); transform-origin: 0 50%; }
+.missing, .failure { margin: 2px 2px 0; font-size: 14px; min-height: 0; }
+.missing:empty { display: none; }
+.failure { padding: 10px 12px; border: 2px solid var(--encre); background: var(--blanc); border-radius: 10px; }
+
+/* Keys */
+.key {
+  width: 100%; min-height: 58px; margin-top: 6px; border: 0; border-bottom: 5px solid #000; border-radius: 16px;
+  background: var(--encre); color: var(--blanc); font-weight: 700; font-size: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 14px; cursor: pointer; touch-action: manipulation;
+}
+.key:hover { background: #26352b; }
+.key:active { transform: translateY(3px); border-bottom-width: 2px; }
+.key:focus-visible, .ghost:focus-visible, .again:focus-visible { outline: 3px solid var(--encre); outline-offset: 3px; }
+.key[aria-disabled] { cursor: progress; }
+.objective { width: 26px; height: 26px; border-radius: 50%; border: 4px solid var(--rouge); display: grid; place-items: center; flex: none; }
+.objective i { width: 8px; height: 8px; border-radius: 50%; background: var(--rouge); transform: scale(0); }
+.objective.on i { transform: scale(1); }
+
+/* The fiche, printed out of the receiver */
+.slot { position: fixed; left: 50%; transform: translateX(-50%); width: min(420px, calc(100% - 20px)); height: 8px; border-radius: 4px; background: var(--encre); opacity: 0; visibility: hidden; z-index: 2; }
+.fiche {
+  position: fixed; left: 50%; transform: translateX(-50%); width: min(400px, calc(100% - 32px)); z-index: 1;
+  background: var(--blanc); color: var(--encre); padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+  border: 2.5px solid var(--encre); border-top: 0; visibility: hidden; overflow-y: auto; overscroll-behavior: contain; outline: none;
+}
+.legend { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; border-bottom: 2px solid var(--encre); padding-bottom: 6px; }
+.fiche h2 { text-wrap: balance; font-size: 30px; line-height: 1.05; letter-spacing: -0.02em; margin: 12px 0 0; font-weight: 700; font-kerning: none; }
+.fiche p { font-size: 15px; line-height: 1.45; margin: 8px 0 0; }
+.book { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+.book th { text-align: left; font-weight: 400; width: 108px; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--encre); vertical-align: top; }
+.book td { padding: 6px 0 6px 8px; border-bottom: 1px solid var(--encre); border-left: 1px solid var(--encre); }
+.count { margin-top: 12px; }
+.count > span { display: block; font-size: 13px; }
+.count b { display: block; font-size: 24px; letter-spacing: -0.01em; margin-top: 2px; }
+.count .keep { margin-top: 6px; }
+.staff { display: block; width: 100%; height: 26px; margin-top: 6px; border: 1.5px solid var(--encre); }
+.staff .r { fill: var(--rouge); } .staff .w { fill: var(--blanc); }
+.staff path { stroke: var(--encre); stroke-width: 1; }
+.staff text { font-family: var(--font); font-size: 8px; fill: var(--encre); }
+.acts { display: grid; gap: 8px; margin-top: 14px; }
+.acts .key { margin: 0; min-height: 52px; font-size: 17px; }
+.ghost { min-height: 50px; border-radius: 14px; border: 2.5px solid var(--encre); background: var(--blanc); font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.ghost:hover { background: var(--ecran); }
+.again { min-height: 44px; background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; touch-action: manipulation; }
+.again:hover { text-decoration-thickness: 2px; }
+
+/* Short phones (360 × 780 and smaller): a tighter screen so « Envoyer » stays in view */
+@media (max-height: 800px) {
+  .instrument { gap: 8px; }
+  .state { font-size: 22px; }
+  .state-row { min-height: 30px; margin-top: 6px; }
+  .sky { max-width: 150px; }
+  .vial { width: 70px; height: 70px; }
+  .vial::before { inset: 20px; }
+  .bubble { left: 25px; top: 25px; width: 18px; height: 18px; }
+  .well { height: 46px; }
+  .field-label { margin-top: 4px; }
+  .key { min-height: 54px; }
 }
 
-::selection {
-  background: color-mix(in srgb, var(--color-water) 25%, transparent);
-}
-
-/* Width as hierarchy: expanded for names, normal for text, condensed for the margin. */
-.wide {
-  font-stretch: 125%;
-  font-variation-settings: "wdth" 125;
-}
-.semi {
-  font-stretch: 87%;
-  font-variation-settings: "wdth" 87;
-}
-.marginalia {
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 500;
-  font-stretch: 75%;
-  font-variation-settings: "wdth" 75;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-}
-.tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-/* The column, inside the safe area and the neatline. */
-.page {
-  padding-left: max(24px, calc(env(safe-area-inset-left) + 20px));
-  padding-right: max(24px, calc(env(safe-area-inset-right) + 20px));
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* The sheet's edge: an outer rule and an inner hairline. */
-.neatline {
-  inset: calc(env(safe-area-inset-top) + 7px) calc(env(safe-area-inset-right) + 7px)
-    calc(env(safe-area-inset-bottom) + 7px) calc(env(safe-area-inset-left) + 7px);
-  border: 1.25px solid color-mix(in srgb, var(--color-ink) 78%, transparent);
-  outline: 0.75px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
-  outline-offset: -5px;
-}
-
-/* The map stops at the neatline; the margin is plain paper. */
-.sheet-clip {
-  clip-path: inset(
-    calc(env(safe-area-inset-top) + 7px) calc(env(safe-area-inset-right) + 7px)
-      calc(env(safe-area-inset-bottom) + 7px) calc(env(safe-area-inset-left) + 7px)
-  );
-}
-
-.graticule-lines path {
-  fill: none;
-  stroke: var(--color-water);
-  stroke-width: 0.75;
-  stroke-opacity: var(--grat-o, 0.3);
-  vector-effect: non-scaling-stroke;
-}
-.graticule-labels {
-  fill: var(--color-ink-2);
-}
-
-/* Wordmark */
-.wordmark {
-  font-size: clamp(25px, 7.4vw, 33px);
-  line-height: 1;
-  font-weight: 800;
-  padding-top: 6px;
-}
-.wordmark-text {
-  display: inline-flex;
-  letter-spacing: -0.035em;
-  font-kerning: none;
-  white-space: nowrap;
-}
-.wordmark-letter {
-  display: inline-block;
-}
-.wordmark-space {
-  display: inline-block;
-  width: 0.26em;
-}
-.wordmark-glyph {
-  width: 0.92em;
-  height: auto;
-  margin-top: -0.06em;
-}
-
-.north-arrow {
-  margin-top: 2px;
-  transform-origin: 50% 60%;
-}
-
-/* On a wide screen the marginalia go to the sheet's corners, as on a printed map. */
-@media (min-width: 768px) {
-  .north-arrow {
-    position: fixed;
-    top: calc(env(safe-area-inset-top) + 30px);
-    right: calc(env(safe-area-inset-right) + 32px);
-  }
-  .sheet-footer {
-    position: fixed;
-    left: calc(env(safe-area-inset-left) + 32px);
-    right: calc(env(safe-area-inset-right) + 32px);
-    bottom: calc(env(safe-area-inset-bottom) + 22px);
-    padding: 0;
-  }
-}
-
-/* The open map between the header and the form; its centre is the fix point. */
-.map-window {
-  height: clamp(132px, 22dvh, 210px);
-}
-.reticle {
-  transform: scale(0.5);
-  opacity: 0.6;
-  transform-origin: 50% 50%;
-}
-
-/* The cartouche: contours masked under the form, as under a map's legend. */
-.halo {
-  position: absolute;
-  inset: -22px -18px -10px;
-  background: var(--color-paper);
-  opacity: 0.8;
-  pointer-events: none;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
-    linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 26px), transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent, #000 26px, #000 calc(100% - 26px), transparent),
-    linear-gradient(to bottom, transparent, #000 26px, #000 calc(100% - 26px), transparent);
-  mask-composite: intersect;
-}
-
-.lead {
-  font-size: 17px;
-  line-height: 1.45;
-}
-
-/* Fields: a surveyed baseline, not a box. */
-.field {
-  position: relative;
-}
-.field-label {
-  display: block;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 500;
-  color: var(--color-ink-2);
-  font-stretch: 87%;
-  font-variation-settings: "wdth" 87;
-}
-.field-input {
-  display: block;
-  width: 100%;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 1px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 17px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  -webkit-appearance: none;
-  appearance: none;
-  outline: none;
-}
-.field-input::-webkit-date-and-time-value {
-  text-align: left;
-}
-.field-input::-webkit-calendar-picker-indicator {
-  opacity: 0.55;
-}
-.field-baseline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: var(--color-ink);
-  opacity: 0.55;
-  transform-origin: 0 50%;
-}
-.field:focus-within .field-baseline {
-  background: var(--color-water);
-  opacity: 1;
-  height: 2px;
-}
-
-/* The survey plate (send). Unlocked: outline only. */
-.plate {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 56px;
-  border: 1px solid var(--color-ink);
-  border-radius: 2px;
-  background: transparent;
-  color: var(--color-ink);
-  font-size: 17px;
-  font-weight: 600;
-  font-stretch: 112%;
-  font-variation-settings: "wdth" 112;
-  cursor: pointer;
-}
-.plate:focus-visible {
-  outline: 2px solid var(--color-water);
-  outline-offset: 3px;
-}
-
-/* Intro overlay (hidden once played, or never shown). */
-html[data-intro="skip"] .intro,
-html[data-intro="done"] .intro {
-  display: none;
-}
-html:not([data-intro="skip"]):not([data-intro="done"]) [data-intro-hide] {
-  opacity: 0;
-}
-html:not([data-intro="skip"]):not([data-intro="done"]) [data-grat-line] {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-html:not([data-intro="skip"]):not([data-intro="done"]) body {
-  overflow: hidden;
-}
-.intro {
-  cursor: default;
-  touch-action: none;
-}
-.intro-skip:focus {
-  position: absolute;
-  top: calc(env(safe-area-inset-top) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  background: var(--color-paper);
-  border: 1px solid var(--color-ink);
-  outline: 2px solid var(--color-water);
-  outline-offset: 2px;
-  font-size: 15px;
-}
-.intro-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 0;
-  will-change: transform;
-}
-.intro-scan-band {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 36px;
-  background: var(--color-water);
-  opacity: 0.06;
-}
-.intro-scan-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: var(--color-water);
-  opacity: 0.9;
-}
-.intro-signal {
-  fill: none;
-  stroke: var(--color-water);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.intro-coords {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-/* A skipped intro lands in 250 ms instead of cutting. */
-.intro-skipped .page {
-  animation: settle 250ms var(--ease-survey) both;
-}
-@keyframes settle {
-  from {
-    opacity: 0.2;
-  }
+/* Wide screens: the instrument stays phone-sized, centred on its yellow */
+@media (min-width: 900px) {
+  .instrument { padding-top: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-skipped .page {
-    animation: none;
-  }
+  .key:active { transform: none; }
 }
