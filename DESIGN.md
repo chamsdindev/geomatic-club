@@ -32,7 +32,8 @@ French way (« 36,8245° N », « ± 0,012 m »), built with `Intl.NumberFormat`
 One column, 440 px at most, centred on the yellow at every width. Top to bottom: the logo and the model plate, the
 LCD (status bar, state, fix ladder, sky plot and level, message line), the lead, the four fields, the ranging rod,
 « Envoyer ». On screens under 800 px tall the LCD tightens so « Envoyer » stays in view (checked at 360 × 780). The
-fiche prints out of a slot under the LCD and scrolls on its own if it's taller than the space left.
+fiche prints out of a slot under the LCD and takes the form's place in the page, which scrolls as one; phones keep
+room under the last button so Safari's floating bar never covers it.
 
 ## Motion (GSAP, `components/receiver/Motion.tsx`)
 
@@ -44,7 +45,7 @@ One labelled timeline per sequence; reduced motion skips the boot and makes ever
 | A field becomes valid | (tweens) | its satellites turn solid (sound: tick), PDOP and H/V count down, the ladder climbs (sound: two-tone beep), a rod segment turns red; all four valid: the key's target fills (chime) |
 | Typing | (loop) | the field's own satellites blink: the receiver listens |
 | Sending | `in` (repeats) | the satellites converge on the centre and back, a GPS ping per pulse |
-| Fix and print | `hold` 0 · `fix` 0.4 · `record` 1.0 · `print` 1.5 | 0.4 s of stillness; the LCD inverts, FIX in dot-matrix, `vibrate([12, 60, 24])`, the fix beep; « Point GC-XXXX enregistré »; the form leaves, the sky plot folds away, the fiche prints in 16 steps with printer ticks, the title types itself (SplitText), the staff fills; on a small phone, ScrollTrigger reveals the rest as it's scrolled |
+| Fix and print | `hold` 0 · `fix` 0.4 · `record` 1.0 · `print` 1.5 | 0.4 s of stillness; the LCD inverts, FIX in dot-matrix, `vibrate([12, 60, 24])`, the fix beep; « Point GC-XXXX enregistré »; the form leaves, the sky plot folds away, the fiche prints in 16 steps with printer ticks, the title types itself (SplitText), the staff fills; the page returns to its top; on a small phone, ScrollTrigger reveals the rest as the page is scrolled |
 | Error | (tweens) | back to Autonome, « Signal perdu », the data kept, « Réessayer » |
 | Nouvelle inscription | (reverse) | the fiche retracts into the slot, the LCD un-inverts, the form returns empty |
 

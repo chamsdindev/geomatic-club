@@ -23,6 +23,10 @@ button, input { font: inherit; color: inherit; }
   width: 100%; max-width: 440px; min-height: 100dvh; display: flex; flex-direction: column; gap: 10px;
   padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
+/* Phones: room under the last button so Safari's floating bar never covers it */
+@media (pointer: coarse) {
+  .instrument { padding-bottom: calc(max(16px, env(safe-area-inset-bottom)) + 72px); }
+}
 
 /* Header: the logo and the receiver's model plate */
 .top { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
@@ -119,11 +123,11 @@ html:not([data-boot="skip"]):not([data-boot="done"]) .lcd { background: var(--of
 .objective.on i { transform: scale(1); }
 
 /* The fiche, printed out of the receiver */
-.slot { position: fixed; left: 50%; transform: translateX(-50%); width: min(420px, calc(100% - 20px)); height: 8px; border-radius: 4px; background: var(--encre); opacity: 0; visibility: hidden; z-index: 2; }
+.slot { display: none; position: relative; z-index: 2; align-self: center; width: calc(100% - 4px); height: 8px; margin-top: -14px; border-radius: 4px; background: var(--encre); visibility: hidden; }
 .fiche {
-  position: fixed; left: 50%; transform: translateX(-50%); width: min(400px, calc(100% - 32px)); z-index: 1;
-  background: var(--blanc); color: var(--encre); padding: 16px 16px max(16px, env(safe-area-inset-bottom));
-  border: 2.5px solid var(--encre); border-top: 0; visibility: hidden; overflow-y: auto; overscroll-behavior: contain; outline: none;
+  display: none; position: relative; z-index: 1; align-self: center; width: calc(100% - 20px); margin-top: -14px;
+  background: var(--blanc); color: var(--encre); padding: 16px;
+  border: 2.5px solid var(--encre); border-top: 0; visibility: hidden; outline: none;
 }
 .legend { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; border-bottom: 2px solid var(--encre); padding-bottom: 6px; }
 .fiche h2 { text-wrap: balance; font-size: 30px; line-height: 1.05; letter-spacing: -0.02em; margin: 12px 0 0; font-weight: 700; font-kerning: none; }

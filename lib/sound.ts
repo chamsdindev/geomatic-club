@@ -33,18 +33,32 @@ function build(): Ctx | null {
   return { ac, out, verb };
 }
 
-/** Call once on the client: reads the preference and arms the unlock on the first gesture. */
+/**
+ * Wakes the audio inside a gesture. iPhones only count a tap's end (touchend, pointerup, click) or a key as a
+ * gesture, and they suspend the context again after a call, the lock screen or a while in the background: so this
+ * runs on every gesture, not once, and does nothing while the sound is already running.
+ */
+function wake() {
+  if (!enabled) return;
+  if (ctx?.ac.state === "closed") ctx = null;
+  ctx ??= build();
+  if (!ctx || ctx.ac.state === "running") return;
+  void ctx.ac.resume().catch(() => {});
+  // a one-sample silent buffer started inside the gesture completes the unlock on iOS
+  const src = ctx.ac.createBufferSource();
+  src.buffer = ctx.ac.createBuffer(1, 1, 22050);
+  src.connect(ctx.ac.destination);
+  src.start(0);
+}
+
+/** Call once on the client: reads the preference and wakes the sound on every tap or key. */
 export function initSound() {
   readPreference();
   listeners.forEach((fn) => fn());
-  const unlock = () => {
-    ctx ??= build();
-    void ctx?.ac.resume();
-    removeEventListener("pointerdown", unlock);
-    removeEventListener("keydown", unlock);
-  };
-  addEventListener("pointerdown", unlock, { passive: true });
-  addEventListener("keydown", unlock);
+  for (const type of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) addEventListener(type, wake, { passive: true, capture: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && ctx && ctx.ac.state !== "running") void ctx.ac.resume().catch(() => {});
+  });
 }
 
 const listeners = new Set<() => void>();
@@ -55,15 +69,18 @@ export function setSoundEnabled(v: boolean) {
   enabled = v;
   listeners.forEach((fn) => fn());
   try { localStorage.setItem(STORAGE.sound, v ? "on" : "off"); } catch {}
-  if (v) { ctx ??= build(); void ctx?.ac.resume(); }
+  if (v) wake();
 }
 
 function play(name: string, minGapMs: number, fn: (c: Ctx, t: number) => void) {
-  if (!enabled || !ctx || ctx.ac.state !== "running") return;
+  if (!enabled || !ctx) return;
   const now = performance.now();
   if (now - (lastPlayed[name] ?? 0) < minGapMs) return;
   lastPlayed[name] = now;
-  fn(ctx, ctx.ac.currentTime + 0.005);
+  const c = ctx;
+  if (c.ac.state === "running") { fn(c, c.ac.currentTime + 0.005); return; }
+  // suspended or interrupted (iOS): ask again, then play if it came back within a beat
+  void c.ac.resume().then(() => { if (c.ac.state === "running" && performance.now() - now < 300) fn(c, c.ac.currentTime + 0.005); }).catch(() => {});
 }
 
 type ToneOpts = { type?: OscillatorType; gain?: number; attack?: number; release?: number; detune?: number; glide?: number; verb?: number };

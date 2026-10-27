@@ -216,11 +216,8 @@ export default function Motion({ apiRef, rootRef, initial }: { apiRef: RefObject
 
     // ---------- FIX and the print
     const fiche = () => R.querySelector<HTMLElement>("[data-fiche]");
-    const placePaper = () => {
-      const b = one(".bezel").getBoundingClientRect(), f = fiche();
-      gsap.set(slot, { top: b.bottom - 4 });
-      if (f) gsap.set(f, { top: b.bottom, maxHeight: `calc(100dvh - ${Math.round(b.bottom)}px - env(safe-area-inset-bottom))` });
-    };
+    // The page goes back to its top so the FIX and the start of the printout are in view.
+    const toTop = () => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     let split: SplitText | null = null;
     const midH = () => mid.scrollHeight;
 
@@ -246,12 +243,13 @@ export default function Motion({ apiRef, rootRef, initial }: { apiRef: RefObject
         .addLabel("record", d(1.0))
         .add(() => write(msgEl, copy.lcd.recorded(ref)), "record")
         .addLabel("print", d(1.5))
+        .add(toTop, "print")
         .to(form, { autoAlpha: 0, y: 40, duration: d(0.35), ease: "power2.in" }, "print")
-        .to(mid, { height: 0, marginTop: 0, autoAlpha: 0, duration: d(0.45), ease: "power3.inOut", onUpdate: placePaper, onStart: () => gsap.set(mid, { height: midH() }) }, "print")
-        .set(slot, { autoAlpha: 1 }, `print+=${d(0.4)}`);
+        .set(form, { display: "none" }, `print+=${d(0.35)}`)
+        .to(mid, { height: 0, marginTop: 0, autoAlpha: 0, duration: d(0.45), ease: "power3.inOut", onStart: () => gsap.set(mid, { height: midH() }) }, "print")
+        .set(slot, { display: "block", autoAlpha: 1 }, `print+=${d(0.4)}`);
       if (f) {
-        tl.add(placePaper, `print+=${d(0.45)}`)
-          .set(f, { visibility: "visible", clipPath: "inset(0 0 100% 0)" }, `print+=${d(0.45)}`)
+        tl.set(f, { display: "block", visibility: "visible", clipPath: "inset(0 0 100% 0)" }, `print+=${d(0.45)}`)
           .add(() => sound.printer(16), `print+=${d(0.45)}`)
           .to(f, { clipPath: "inset(0 0 0% 0)", duration: d(1.2), ease: "steps(16)" }, `print+=${d(0.45)}`);
         const title = f.querySelector("[data-fiche-title]");
@@ -262,15 +260,16 @@ export default function Motion({ apiRef, rootRef, initial }: { apiRef: RefObject
         tl.from(f.querySelectorAll("[data-staff]"), { scaleX: 0, transformOrigin: "0 50%", duration: d(0.12), stagger: d(0.03), ease: "steps(3)" }, `print+=${d(1.7)}`);
       }
     }));
-    // Taller than the screen (a small phone): the rest of the fiche reveals itself as it's scrolled.
+    // Taller than the screen (a small phone): what lies below the fold reveals itself as the page is scrolled.
     const afterPrint = () => {
       const f = fiche();
-      if (!f || reduce) return;
+      if (!f) return;
       f.focus({ preventScroll: true });
-      if (f.scrollHeight <= f.clientHeight + 4) return;
-      const below = Array.from(f.querySelectorAll<HTMLElement>(".fiche-sec")).filter((s) => s.offsetTop > f.clientHeight);
+      if (reduce) return;
+      const below = Array.from(f.querySelectorAll<HTMLElement>(".fiche-sec")).filter((s) => s.getBoundingClientRect().top > window.innerHeight);
+      if (!below.length) return;
       gsap.set(below, { autoAlpha: 0, y: 14 });
-      ScrollTrigger.batch(below, { scroller: f, start: "top 98%", once: true, onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.35 }) });
+      ScrollTrigger.batch(below, { start: "top 98%", once: true, onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.35 }) });
     };
 
     const fail = contextSafe(() => {
@@ -286,8 +285,10 @@ export default function Motion({ apiRef, rootRef, initial }: { apiRef: RefObject
       ScrollTrigger.getAll().forEach((t) => t.kill());
       split?.revert(); split = null;
       const tl = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete: resolve });
-      if (f) tl.to(f, { clipPath: "inset(0 0 100% 0)", duration: d(0.6), ease: "steps(10)" }, 0);
-      tl.set(slot, { autoAlpha: 0 }, d(0.6))
+      tl.add(toTop, 0);
+      if (f) tl.to(f, { clipPath: "inset(0 0 100% 0)", duration: d(0.6), ease: "steps(10)" }, 0).set(f, { display: "none" }, d(0.6));
+      tl.set(slot, { display: "none", autoAlpha: 0 }, d(0.6))
+        .set(form, { display: "" }, d(0.6))
         .add(() => { lcd.classList.remove("locked"); gsap.set(fixEl.querySelectorAll("[data-dot]"), { autoAlpha: 0 }); gsap.set(stateEl, { autoAlpha: 1 }); }, d(0.6))
         .to(mid, { height: midH(), autoAlpha: 1, marginTop: "", duration: d(0.45), clearProps: "height,marginTop" }, d(0.6))
         .to(form, { autoAlpha: 1, y: 0, duration: d(0.4) }, d(0.8))
