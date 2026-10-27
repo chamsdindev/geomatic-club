@@ -1,6 +1,7 @@
 # Geomatic Club — design (redesign, branch `redesign`)
 
-Status, 27 October 2026: three directions proposed in `design/CONCEPTS.md`, waiting for Chams's choice. This file
+Status, 27 October 2026: round 1 (`design/CONCEPTS.md`) rejected; round 2 (`design/CONCEPTS-2.md`: references, three
+GSAP prototypes, logo exploration) waiting for Chams's choice. This file
 gets the full design (tokens, type scale, layout, GSAP timelines, sound map, logo usage) once a direction is chosen.
 
 ## What the first version got wrong (never again)
@@ -25,5 +26,5 @@ gets the full design (tokens, type scale, layout, GSAP timelines, sound map, log
 - **Must**: work at 16 px and on a T-shirt back, in one colour and reversed; come from the world of geomatics;
   be drawable by hand on a grid.
 - **Must not**: globe, generic map pin, pin + wifi waves, gradients, the old triangle.
-- **Directions** (round 1, `design/logo/`): A « Réticule » (a G that is a theodolite reticle), B « Borne » (the
-  brass survey-marker disk, an emblem), C « Raster » (GC as sensor cells, one cell yours).
+- **Directions**: round 1 (`design/logo/`) rejected as too close to existing symbols; round 2 (`design/logo2/`):
+  twenty thumbnails, three refined (Vectorisation, Cheminement, Hachures), Cheminement recommended.

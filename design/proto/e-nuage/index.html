@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Geomatic Club, nuage de points</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&family=Workbench&display=swap" rel="stylesheet">
+<style>
+:root{--nuit:#0E1B2B;--chaux:#F2F5F7;--bleu:#1C9AD6;--ocre:#C99A5B;--brume:#9FB0C2}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--nuit);color:var(--chaux);font-family:"Atkinson Hyperlegible Next",sans-serif;overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.wb{font-family:"Workbench",monospace;font-variant-numeric:tabular-nums}
+header{position:fixed;left:0;right:0;top:0;padding:max(12px,env(safe-area-inset-top)) 18px 10px;display:flex;justify-content:space-between;align-items:baseline;pointer-events:none;background:rgba(14,27,43,.88);border-bottom:1px solid #2B425C}
+.brand{font-weight:800;font-size:19px;letter-spacing:-.01em}
+.scan{font-size:13px;color:var(--brume);text-align:right;line-height:1.35}
+.scan b{display:block;font-size:22px;color:var(--chaux);font-weight:400}
+.panel{position:fixed;left:0;right:0;bottom:0;background:rgba(14,27,43,.93);border-top:1px solid #2B425C;padding:14px 18px max(14px,env(safe-area-inset-bottom))}
+.panel .in{max-width:394px;margin:0 auto}
+.stations{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--brume);margin-bottom:6px}
+.stations i{width:22px;height:4px;background:#2B425C;display:inline-block}
+.stations i.on{background:var(--chaux)}
+form{display:grid;gap:2px}
+.row label{display:block;font-size:13px;color:var(--brume);margin-top:6px}
+.row input,.pick{display:block;width:100%;border:0;border-bottom:1.5px solid #4A6380;background:transparent;font:600 18px "Atkinson Hyperlegible Next",sans-serif;color:var(--chaux);height:38px;outline:none;padding:0;border-radius:0}
+.row input:focus,.pick:focus-within{border-bottom-color:var(--bleu)}
+.pick{position:relative;display:flex;align-items:center}
+.pick input{position:absolute;inset:0;opacity:0;cursor:pointer;border:0;height:38px}
+.pick output:empty::before{content:"Choisir";color:#6F829A;font-weight:400}
+.two{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+.err{font-size:13px;min-height:0;color:var(--chaux)}
+.err:not(:empty){padding-top:3px}
+.err:not(:empty)::before{content:"";display:inline-block;width:7px;height:7px;background:var(--ocre);margin-right:6px}
+.send{margin-top:12px;height:54px;border:0;border-radius:27px;background:var(--bleu);color:var(--nuit);font:800 18px "Atkinson Hyperlegible Next",sans-serif;cursor:pointer;width:100%}
+.send:focus-visible{outline:3px solid var(--chaux);outline-offset:3px}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--nuit);border-top:1px solid #2B425C;padding:18px 18px max(14px,env(safe-area-inset-bottom));visibility:hidden}
+.sheet .in{max-width:394px;margin:0 auto}
+.sheet h1{font-size:30px;line-height:1.05;letter-spacing:-.02em;font-weight:800}
+.sheet p{margin-top:8px;font-size:16px;line-height:1.45;color:#D7DEE6}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin-top:12px;font-size:14px}
+.dl dt{color:var(--brume)}
+.count{margin-top:10px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.acts{display:grid;gap:8px;margin-top:14px}
+.ghost{height:48px;border-radius:24px;border:1.5px solid var(--chaux);background:transparent;color:var(--chaux);font:700 16px "Atkinson Hyperlegible Next",sans-serif;cursor:pointer}
+.again{background:none;border:0;color:var(--brume);font:14px "Atkinson Hyperlegible Next",sans-serif;text-decoration:underline;text-underline-offset:3px;padding:6px;cursor:pointer}
+.tag{position:fixed;pointer-events:none;font-size:13px;line-height:1.35;opacity:0}
+.tag b{display:block;font-family:"Workbench",monospace;font-size:20px;font-weight:400;color:var(--bleu)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<header><span class="brand">Geomatic Club</span><span class="scan">Sidi Bou Saïd, relevé laser<b class="wb" id="count">0</b>points</span></header>
+<div class="tag" id="tag" aria-hidden="true"><b id="tag-name"></b><span id="tag-xy"></span></div>
+
+<section class="panel" id="panel"><div class="in">
+  <div class="stations" aria-hidden="true"><span id="st-label">Station 1 sur 5</span><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  <form id="form" novalidate>
+    <div class="row"><label for="prenom">Prénom</label><input id="prenom" autocomplete="given-name" enterkeyhint="next" aria-describedby="prenom-err"><p class="err" id="prenom-err" aria-live="polite"></p></div>
+    <div class="row"><label for="nom">Nom</label><input id="nom" autocomplete="family-name" enterkeyhint="next" aria-describedby="nom-err"><p class="err" id="nom-err" aria-live="polite"></p></div>
+    <div class="two">
+      <div class="row"><label for="date">Date</label><div class="pick"><output id="date-out"></output><input id="date" type="date" aria-describedby="date-err"></div><p class="err" id="date-err" aria-live="polite"></p></div>
+      <div class="row"><label for="heure">Heure</label><div class="pick"><output id="heure-out"></output><input id="heure" type="time" min="08:00" max="18:00" step="1800" aria-describedby="heure-err"></div><p class="err" id="heure-err" aria-live="polite"></p></div>
+    </div>
+    <p class="sr" id="progress" aria-live="polite"></p>
+    <button class="send" id="envoyer" type="submit">Envoyer</button>
+  </form>
+</div></section>
+
+<section class="sheet" id="sheet" aria-live="polite"><div class="in">
+  <h1 id="s-title"></h1><p id="s-text"></p>
+  <div class="count" id="s-count"></div>
+  <dl class="dl"><dt>Coordonnées</dt><dd id="s-xy"></dd><dt>Référence</dt><dd id="s-ref"></dd></dl>
+  <div class="acts"><button class="send" type="button" style="margin:0">Enregistrer ma carte</button><button class="ghost" type="button">Partager</button><button class="again" type="button" onclick="location.reload()">Nouvelle inscription</button></div>
+</div></section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="../common.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const reduce = GC.reduced();
+
+// ---------- The scene: a cliff-top village, as a terrestrial LiDAR would see it (procedural stand-in)
+function rng(seed) { let s = seed >>> 0; return () => ((s = Math.imul(s ^ (s >>> 15), 2246822507) ^ Math.imul(s ^ (s >>> 13), 3266489909), (s ^= s >>> 16) >>> 0) / 4294967295); }
+const R = rng(2026);
+const STATIONS = [[0, .32, .05], [-.62, .28, -.2], [.6, .3, -.25], [-.2, .3, -.55], [.35, .1, .42]]; // scanner positions (x, y, z)
+const pts = []; // x y z, kind (0 ground, 1 wall, 2 sea, 3 tree), intensity
+const ground = (x, z) => { const cliff = 1 / (1 + Math.exp((z - .32) * 16)); const terr = Math.floor((.6 - z) * 6) / 6 * .05; return Math.max(0, cliff * (.28 + terr) + Math.sin(x * 5) * .015 * cliff); };
+for (let i = 0; i < 52000; i++) { const x = R() * 2.2 - 1.1, z = R() * 1.7 - 1, y = ground(x, z); if (z > .45 && y < .01) continue; pts.push(x, y + (R() - .5) * .004, z, 0, .45 + R() * .3); }
+for (let i = 0; i < 9000; i++) { const x = R() * 2.4 - 1.2, z = .5 + R() * .7; pts.push(x, 0, z, 2, .18 + R() * .12); }
+const houses = [];
+for (let i = 0; i < 46; i++) { const x = R() * 1.7 - .85, z = R() * .75 - .65; const w = .06 + R() * .09, d = .06 + R() * .08, h = .05 + R() * .08; houses.push([x, z, w, d, h, R() < .3]); }
+houses.push([.15, -.2, .05, .05, .26, true]); // the minaret
+for (const [x, z, w, d, h, dome] of houses) {
+  const b = ground(x, z); const area = (w * d + 2 * h * (w + d)) * 30000;
+  for (let i = 0; i < area; i++) {
+    const f = R(); let px, py, pz;
+    if (f < .2) { px = x + (R() - .5) * w; pz = z + (R() - .5) * d; py = b + h; }
+    else if (f < .6) { px = x + (R() - .5) * w; pz = z + (R() < .5 ? -d / 2 : d / 2); py = b + R() * h; }
+    else { px = x + (R() < .5 ? -w / 2 : w / 2); pz = z + (R() - .5) * d; py = b + R() * h; }
+    py = b + Math.round((py - b) / .0065) * .0065; // terrestrial scans come in horizontal laser rows
+    pts.push(px, py, pz, 1, .8 + R() * .2);
+  }
+  if (dome) { const r = Math.min(w, d) * .45; for (let i = 0; i < 900; i++) { const u = R() * Math.PI * 2, v = Math.acos(R()); pts.push(x + r * Math.sin(v) * Math.cos(u), b + h + r * Math.cos(v), z + r * Math.sin(v) * Math.sin(u), 1, .9); } }
+}
+for (let t = 0; t < 22; t++) { const x = R() * 1.8 - .9, z = R() * .6 - .4, b = ground(x, z), r = .03 + R() * .03; for (let i = 0; i < 500; i++) { const u = R() * Math.PI * 2, v = Math.acos(2 * R() - 1), q = Math.cbrt(R()) * r; pts.push(x + q * Math.sin(v) * Math.cos(u), b + r + q * Math.cos(v), z + q * Math.sin(v) * Math.sin(u), 3, .3 + R() * .2); } }
+const COUNT = pts.length / 5;
+// per point: true position, noise position, which station scans it, its distance to that station
+const pos = new Float32Array(COUNT * 3), noise = new Float32Array(COUNT * 3), meta = new Float32Array(COUNT * 4);
+for (let i = 0; i < COUNT; i++) {
+  const x = pts[i * 5], y = pts[i * 5 + 1], z = pts[i * 5 + 2];
+  pos.set([x, y, z], i * 3); noise.set([(R() - .5) * 3, (R() - .5) * 1.6 + .3, (R() - .5) * 3], i * 3);
+  let best = 0, bd = 9; STATIONS.forEach(([sx, sy, sz], s) => { const dd = Math.hypot(x - sx, z - sz) + (s ? 0 : -.25); if (dd < bd) { bd = dd; best = s; } });
+  meta.set([pts[i * 5 + 3], pts[i * 5 + 4], best, Math.hypot(x - STATIONS[best][0], z - STATIONS[best][2])], i * 4);
+}
+
+// ---------- WebGL2
+const cv = $("#gl"); const gl = cv.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "high-performance" });
+const VS = `#version 300 es
+in vec3 aPos; in vec3 aNoise; in vec4 aMeta;
+uniform mat4 uMVP; uniform float uRing[5]; uniform float uSize; uniform float uDim; uniform float uTime;
+out vec3 vCol; out float vA;
+void main(){
+  int s = int(aMeta.z); float ring = uRing[s]; float d = aMeta.w;
+  float t = clamp((ring - d) / .18, 0., 1.); t = t * t * (3. - 2. * t);
+  vec3 p = mix(aNoise + vec3(sin(uTime * .3 + aNoise.z) * .02, 0., 0.), aPos, t);
+  gl_Position = uMVP * vec4(p, 1.);
+  float front = exp(-pow((ring - d) / .03, 2.)) * step(.001, ring);
+  vec3 ground = vec3(.79,.60,.36), wall = vec3(.95,.96,.97), sea = vec3(.45,.55,.66), tree = vec3(.42,.52,.48);
+  vec3 c = aMeta.x < .5 ? ground : aMeta.x < 1.5 ? wall : aMeta.x < 2.5 ? sea : tree;
+  vCol = mix(vec3(.24,.33,.45), c * aMeta.y, t) + front * vec3(.6,.85,1.);
+  vA = mix(.28, 1., t) * (1. - uDim * .45);
+  gl_PointSize = uSize * mix(.9, 1.6, t) / gl_Position.w;
+}`;
+const FS = `#version 300 es
+precision mediump float; in vec3 vCol; in float vA; out vec4 o;
+void main(){ vec2 c = gl_PointCoord - .5; if (dot(c,c) > .25) discard; o = vec4(vCol * vA, 1.); }`;
+const NVS = `#version 300 es
+in vec3 aPos; in vec3 aNoise; uniform mat4 uMVP; uniform float uP; uniform float uSize;
+void main(){ float t = clamp(uP * 1.6 - aNoise.y * .6, 0., 1.); t = t * t * (3. - 2. * t); vec3 p = mix(aNoise, aPos, t); gl_Position = uMVP * vec4(p, 1.); gl_PointSize = uSize * 2.1 / gl_Position.w; }`;
+const NFS = `#version 300 es
+precision highp float; out vec4 o; uniform float uP;
+void main(){ vec2 c = gl_PointCoord - .5; if (dot(c,c) > .25) discard; o = vec4(vec3(.11,.60,.84) * (.4 + uP * .6), 1.); }`;
+function prog(vs, fs) { const p = gl.createProgram(); for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); gl.attachShader(p, s); } gl.linkProgram(p); return p; }
+const P = prog(VS, FS), PN = prog(NVS, NFS);
+function vao(program, attrs) { const v = gl.createVertexArray(); gl.bindVertexArray(v); for (const [name, data, size] of attrs) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); const l = gl.getAttribLocation(program, name); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, 0, 0); } return v; }
+const scene = vao(P, [["aPos", pos, 3], ["aNoise", noise, 3], ["aMeta", meta, 4]]);
+let nameVao = null, nameCount = 0;
+const U = Object.fromEntries(["uMVP", "uRing", "uSize", "uDim", "uTime"].map((n) => [n, gl.getUniformLocation(P, n)]));
+const UN = Object.fromEntries(["uMVP", "uP", "uSize"].map((n) => [n, gl.getUniformLocation(PN, n)]));
+gl.enable(gl.DEPTH_TEST);
+
+// camera
+const cam = { yaw: -.25, pitch: .3, dist: 2.75, tx: 0, ty: .1, tz: -.05, auto: 1, shift: .26 }; // shift: lens shift upwards, the panel covers the bottom
+function mvp() {
+  const w = cv.width, h = cv.height, f = 1 / Math.tan(.42), a = w / h, n = .05, fa = 20;
+  const ex = cam.tx + cam.dist * Math.cos(cam.pitch) * Math.sin(cam.yaw), ey = cam.ty + cam.dist * Math.sin(cam.pitch), ez = cam.tz + cam.dist * Math.cos(cam.pitch) * Math.cos(cam.yaw);
+  let zx = ex - cam.tx, zy = ey - cam.ty, zz = ez - cam.tz; const zl = Math.hypot(zx, zy, zz); zx /= zl; zy /= zl; zz /= zl;
+  let xx = zz, xy = 0, xz = -zx; const xl = Math.hypot(xx, xz); xx /= xl; xz /= xl;
+  const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+  const V = [xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0, -(xx * ex + xy * ey + xz * ez), -(yx * ex + yy * ey + yz * ez), -(zx * ex + zy * ey + zz * ez), 1];
+  const Pm = [f / a, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+  const out = new Float32Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += Pm[k * 4 + r] * V[c * 4 + k]; out[c * 4 + r] = s; }
+  for (let c = 0; c < 4; c++) out[c * 4 + 1] += cam.shift * out[c * 4 + 3];
+  return out;
+}
+function project(x, y, z) { const m = mvp(); const cx = m[0] * x + m[4] * y + m[8] * z + m[12], cy = m[1] * x + m[5] * y + m[9] * z + m[13], cw = m[3] * x + m[7] * y + m[11] * z + m[15]; return [(cx / cw * .5 + .5) * innerWidth, (1 - (cy / cw * .5 + .5)) * innerHeight]; }
+
+const state = { ring: [0, 0, 0, 0, 0], dim: 0, nameP: 0, frozen: false };
+let last = 0, clock = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = last ? Math.min(.05, (now - last) / 1000) : 0; last = now;
+  if (!state.frozen && !reduce) { clock += dt; cam.yaw += dt * .05 * cam.auto; }
+  const dpr = Math.min(devicePixelRatio, 2); const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
+  gl.clearColor(.055, .106, .169, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const M = mvp(); const size = 1.45 * dpr * (innerHeight / 844);
+  gl.useProgram(P); gl.bindVertexArray(scene);
+  gl.uniformMatrix4fv(U.uMVP, false, M); gl.uniform1fv(U.uRing, state.ring); gl.uniform1f(U.uSize, size); gl.uniform1f(U.uDim, state.dim); gl.uniform1f(U.uTime, clock);
+  gl.drawArrays(gl.POINTS, 0, COUNT);
+  if (nameVao) { gl.useProgram(PN); gl.bindVertexArray(nameVao); gl.uniformMatrix4fv(UN.uMVP, false, M); gl.uniform1f(UN.uP, state.nameP); gl.uniform1f(UN.uSize, size); gl.drawArrays(gl.POINTS, 0, nameCount); }
+  // the visible count: points already registered
+  const shown = Math.round(state.ring.reduce((a, r, s) => a + Math.min(1, r / 1.2) * stationCount[s], 0) + nameCount * state.nameP);
+  if (shown !== frame.shown) { frame.shown = shown; $("#count").textContent = shown.toLocaleString("fr-FR"); }
+}
+const stationCount = [0, 0, 0, 0, 0]; for (let i = 0; i < COUNT; i++) stationCount[meta[i * 4 + 2]]++;
+requestAnimationFrame(frame);
+
+// Drag turns the scan (one finger, on the open part of the screen)
+let drag = null;
+cv.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; cam.auto = 0; });
+addEventListener("pointermove", (e) => { if (!drag) return; cam.yaw = drag.yaw - (e.clientX - drag.x) * .006; cam.pitch = gsap.utils.clamp(.15, 1.1, drag.pitch + (e.clientY - drag.y) * .004); });
+addEventListener("pointerup", () => { drag = null; gsap.to(cam, { auto: 1, duration: 2, delay: 1.5 }); });
+
+// ---------- Intro (2 s): the first station scans; the noise resolves into a village
+const intro = gsap.timeline({ paused: true });
+intro.addLabel("scan", 0)
+  .to(state.ring, { 0: 1.5, duration: 1.9, ease: "power1.inOut" }, "scan")
+  .fromTo(cam, { dist: 4.2, pitch: .7 }, { dist: 2.75, pitch: .3, duration: 2, ease: "power3.out" }, "scan")
+  .from("header, .panel", { autoAlpha: 0, duration: .5, stagger: .1 }, "scan+=1.2");
+GC.skippable(intro);
+document.fonts.ready.then(() => (reduce ? intro.progress(1) : intro.play()));
+
+// ---------- Each valid field is a new scan station
+const bars = [...document.querySelectorAll(".stations i")];
+$("#date").addEventListener("input", (e) => ($("#date-out").textContent = e.target.value ? `${GC.fmtDateShort(e.target.value)} ${e.target.value.slice(0, 4)}` : ""));
+$("#heure").addEventListener("input", (e) => ($("#heure-out").textContent = GC.fmtTime(e.target.value)));
+const form = GC.wireForm({
+  form: $("#form"),
+  onState(id, ok, msg, k) {
+    const s = k + 1;
+    gsap.to(state.ring, { [s]: ok ? 1.5 : 0, duration: ok ? 1.4 : .5, ease: ok ? "power1.inOut" : "power2.in" });
+    bars[s].classList.toggle("on", ok);
+    const n = form ? form.valid() : 0; $("#st-label").textContent = `Station ${n + 1} sur 5`;
+    $("#progress").textContent = `${n} stations sur 4 relevées`;
+  },
+  onSubmit: success,
+});
+
+// ---------- Success: the scan stops, the name is scanned into the cloud in Sidi Bou Saïd blue
+function nameCloud(text) {
+  const c = document.createElement("canvas"); c.width = 900; c.height = 180; const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.font = "800 150px 'Atkinson Hyperlegible Next'"; g.textAlign = "center"; g.textBaseline = "middle";
+  let size = 150; while (g.measureText(text).width > 860 && size > 40) { size -= 6; g.font = `800 ${size}px 'Atkinson Hyperlegible Next'`; }
+  g.fillText(text, 450, 95); const d = g.getImageData(0, 0, 900, 180).data;
+  const P = [], N = [];
+  // laser rows, like the walls: every 4th pixel row, a point every 2 px with a little jitter
+  for (let y = 0; y < 180; y += 3) for (let x = 0; x < 900; x += 2) if (d[(y * 900 + x) * 4 + 3] > 128 && R() > .08) {
+    P.push((x - 450) / 900 * .95 + (R() - .5) * .002, .52 - y / 180 * .2, .12 + (R() - .5) * .01); N.push((R() - .5) * 2.4, R() * .9 + .1, (R() - .5) * 2.4);
+  }
+  nameCount = P.length / 3; nameVao = vao(PN, [["aPos", new Float32Array(P), 3], ["aNoise", new Float32Array(N), 3]]);
+}
+function success(d) {
+  const p = GC.point(d.prenom, d.nom, d.date);
+  $("#s-title").textContent = `Bienvenue sur la carte, ${d.prenom}.`;
+  $("#s-text").textContent = `Ton point est fixé. Le ${GC.fmtDate(d.date)} à ${GC.fmtTime(d.heure)}, on t'attend.`;
+  $("#s-count").textContent = GC.countdown(d.date, d.heure);
+  $("#s-xy").textContent = `${GC.fmtLat(p.lat)}  ${GC.fmtLon(p.lon)}`; $("#s-ref").textContent = p.ref;
+  $("#tag-name").textContent = `${d.prenom} ${d.nom}`; $("#tag-xy").textContent = `${GC.fmtLat(p.lat)}  ${GC.fmtLon(p.lon)}`;
+  nameCloud(d.prenom);
+  navigator.vibrate?.([12, 60, 24]);
+  const tl = gsap.timeline();
+  tl.addLabel("hold", 0)
+    .add(() => (state.frozen = true), "hold")
+    .to(state, { dim: 1, duration: .25 }, "hold")
+    .to("#panel", { yPercent: 100, duration: .45, ease: "power2.in" }, "hold")
+    .addLabel("scan", .4)
+    .to(state, { nameP: 1, duration: 1.3, ease: "power2.inOut" }, "scan")
+    .to(cam, { dist: 2.1, pitch: .24, ty: .24, tz: .05, yaw: "+=.3", shift: .3, duration: 1.6, ease: "power3.inOut" }, "scan")
+    .to(state, { dim: .35, duration: .6 }, "scan+=.6")
+    .addLabel("sheet", 2.0)
+    .set("#sheet", { visibility: "visible" }, "sheet")
+    .from("#sheet", { yPercent: 100, duration: .6, ease: "power3.out" }, "sheet")
+    .add(() => { gsap.set("#tag", { left: 18, top: 96 }); }, "sheet")
+    .to("#tag", { opacity: 1, duration: .4 }, "sheet+=.3");
+  if (reduce) tl.progress(1);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+[
+ {
+  "title": "File:Autun 25000.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Autun_25000.jpg",
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Autun_25000.jpg/960px-Autun_25000.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "license": "CC BY-SA 4.0",
+  "artist": "institut géographique national (ign) France",
+  "file": "autun-25000-jpg.jpg"
+ },
+ {
+  "title": "File:QGIS Software Interface.png",
+  "page": "https://commons.wikimedia.org/wiki/File:QGIS_Software_Interface.png",
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/QGIS_Software_Interface.png/960px-QGIS_Software_Interface.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "license": "CC0",
+  "artist": "QGIS Development Team",
+  "file": "qgis-software-interface-png.png"
+ },
+ {
+  "title": "File:QGIS 2.0.1 Dufour - Screenshot showing relief.png",
+  "page": "https://commons.wikimedia.org/wiki/File:QGIS_2.0.1_Dufour_-_Screenshot_showing_relief.png",
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/QGIS_2.0.1_Dufour_-_Screenshot_showing_relief.png/960px-QGIS_2.0.1_Dufour_-_Screenshot_showing_relief.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "license": "CC BY-SA 3.0",
+  "artist": "Tobias1984",
+  "file": "qgis-2-0-1-dufour-screenshot-showing-relief-png.png"
+ },
+ {
+  "title": "File:OpenStreetMap, English rendering of Gaza strip.png",
+  "page": "https://commons.wikimedia.org/wiki/File:OpenStreetMap,_English_rendering_of_Gaza_strip.png",
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/OpenStreetMap%2C_English_rendering_of_Gaza_strip.png/960px-OpenStreetMap%2C_English_rendering_of_Gaza_strip.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "license": "CC BY-SA 3.0",
+  "artist": "OpenStreetMap contributers",
+  "file": "openstreetmap-english-rendering-of-gaza-strip-png.png"
+ },
+ {
+  "title": "File:Maps template-ru-temporary file.png",
+  "page": "https://commons.wikimedia.org/wiki/File:Maps_template-ru-temporary_file.png",
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Maps_template-ru-temporary_file.png/960px-Maps_template-ru-temporary_file.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+  "license": "CC BY 2.5",
+  "artist": "Maps_template-ru.svg: *Maps_template-fr.svg: Original file: Eric Gaba (Sting - f",
+  "file": "maps-template-ru-temporary-file-png.png"
+ }
+]
