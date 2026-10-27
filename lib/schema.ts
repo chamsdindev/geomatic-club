@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { copy } from "./copy";
-import { SLOT } from "./config";
 import { tunisNow } from "./time";
 
 /** Letters of any script (Latin with accents, Arabic…), their marks, spaces, hyphens and apostrophes. */
@@ -19,11 +18,8 @@ export const fields = {
   nom: name(copy.errors.nomEmpty),
   date: z.string().min(1, copy.errors.dateEmpty).regex(/^\d{4}-\d{2}-\d{2}$/, copy.errors.dateEmpty)
     .refine((d) => d >= tunisNow().date, copy.errors.datePast),
-  heure: z.string().min(1, copy.errors.timeEmpty).regex(/^\d{2}:\d{2}$/, copy.errors.timeEmpty)
-    .refine((t) => {
-      const m = toMinutes(t);
-      return m >= toMinutes(SLOT.start) && m <= toMinutes(SLOT.end) && m % SLOT.stepMinutes === 0;
-    }, copy.errors.timeSlot),
+  // any minute of the day, 00:00 to 23:59; only the past is refused (below, against the date)
+  heure: z.string().min(1, copy.errors.timeEmpty).regex(/^([01]\d|2[0-3]):[0-5]\d$/, copy.errors.timeEmpty),
 } as const;
 
 export type FieldName = keyof typeof fields;

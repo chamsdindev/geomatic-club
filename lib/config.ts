@@ -1,6 +1,3 @@
-/** Opening hours for a slot: first and last time, and the step between them. */
-export const SLOT = { start: "08:00", end: "18:00", stepMinutes: 30 } as const;
-
 /** The club's place: Tunis. Members' points are drawn around it. */
 export const CLUB = { lat: 36.8065, lon: 10.1815 } as const;
 

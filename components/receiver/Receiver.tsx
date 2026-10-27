@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { copy } from "@/lib/copy";
-import { SLOT } from "@/lib/config";
 import { checkField, FIELD_NAMES, type FieldName } from "@/lib/schema";
 import { memberPoint } from "@/lib/point";
 import { frDateShort, frTime } from "@/lib/time";
@@ -146,7 +145,7 @@ export function Receiver() {
           </Field.Root>
           <Field.Root name="heure" error={shown("heure")}>
             <Field.Label>{copy.fields.heure}</Field.Label>
-            <Field.Picker type="time" value={values.heure} min={SLOT.start} max={SLOT.end} step={SLOT.stepMinutes * 60} onChange={onChange} onFocus={onFocus} onBlur={onBlur} display={frTime(values.heure)} placeholder={copy.fields.choose} autoComplete="off" />
+            <Field.Picker type="time" value={values.heure} step={60} onChange={onChange} onFocus={onFocus} onBlur={onBlur} display={frTime(values.heure)} placeholder={copy.fields.choose} autoComplete="off" />
             <Field.Error />
           </Field.Root>
         </div>

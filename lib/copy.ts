@@ -24,7 +24,6 @@ export const copy = {
     dateEmpty: "Choisis une date.",
     datePast: "Cette date est passée\u00a0: choisis aujourd’hui ou plus tard.",
     timeEmpty: "Choisis une heure.",
-    timeSlot: "Entre 8\u00a0h et 18\u00a0h, à l’heure ou à la demie.",
     timePast: "Cette heure est passée\u00a0: choisis plus tard aujourd’hui, ou un autre jour.",
   },
   /** « Il manque : prénom, date » under the key when the form isn't complete. */

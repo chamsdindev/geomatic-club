@@ -19,8 +19,8 @@ per browser tab and never with reduced motion.
 ## Where things live
 
 - **Copy**: every French word is in `lib/copy.ts`.
-- **Settings**: opening hours (`SLOT`, 08:00–18:00, every 30 minutes), the club's point, the time zone and the rate
-  limit are in `lib/config.ts`.
+- **Settings**: the club's point, the time zone and the rate limit are in `lib/config.ts`. Any time of day is
+  accepted (00:00 to 23:59); a time already past today (Tunis time) is refused.
 - **Validation**: `lib/schema.ts` (zod), shared by the form and the API.
 - **The receiver**: `components/receiver/` (`Receiver.tsx` holds the form and the sequence, `Lcd.tsx` the screen,
   `Fiche.tsx` the printed record, `Motion.tsx` every GSAP animation, loaded after the first paint).
